@@ -1,34 +1,56 @@
-//SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-pragma solidity ^0.8.13;
-
-contract Bank {
-
-    mapping(address => uint) private balances;
-
-    event Deposit(address indexed owner, uint amount);
-    event Withdraw(address indexed owner, uint amount);
-    event Transfer(address indexed from, address indexed to, uint amount);
-
-    function deposit(address _account, uint _number) public payable {
-        balances[_account] += _number;
-        emit Deposit(_account, _number);
+contract QuestionVoting {
+    struct Poll {
+        string question;
+        uint256 yesVotes;
+        uint256 noVotes;
+        bool isActive;
     }
 
-    function withdraw(address _account, uint _number) public payable {
-        require(balances[_account] > 0, "You're broke!");
-        balances[_account] -= _number;
-        emit Withdraw(_account, _number);
+    Poll public currentPoll;
+
+    // to check if a poll is active
+    modifier ActivePoll() {
+        require(currentPoll.isActive, "Poll is not active.");
+        _;
     }
 
-    function transfer(address _from, address _to, uint _number) public payable {
-        require(balances[_from] >= _number, "You do not have enough funds for this transaction");
-        balances[_from] -= _number;
-        balances[_to] += _number;
-        emit Transfer(_from, _to, _number);
+    // to create a new poll
+    function createPoll(string memory _question) public {
+        require(!currentPoll.isActive, "A poll is already active");
+
+        currentPoll = Poll({
+            question: _question,
+            yesVotes: 0,
+            noVotes: 0,
+            isActive: true
+        });
     }
 
-    function getBalance(address _address) public view returns(uint) {
-        return balances[_address];
-    } 
+    // to vote
+    function vote(bool _voteYes) public onlyActivePoll {
+        assert(currentPoll.isActive);
+
+        if (_voteYes) {
+            currentPoll.yesVotes++;
+        } else {
+            currentPoll.noVotes++;
+        }
+    }
+
+    // to close the poll and get results
+    function closePoll() public onlyActivePoll {
+        if (!currentPoll.isActive) {
+            revert("Poll is already closed");
+        }
+
+        currentPoll.isActive = false;
+    }
+
+    // to get poll results
+    function getResults() public view returns (string memory, uint256, uint256) {
+        return (currentPoll.question, currentPoll.yesVotes, currentPoll.noVotes);
+    }
 }
