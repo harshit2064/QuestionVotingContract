@@ -24,10 +24,10 @@ contract QuestionVoting {
     }
 
     // to vote
-    function vote(bool _voteYes) public {
+    function vote(bool _vote) public {
         assert(currentPoll.isActive);
 
-        if (_voteYes) {
+        if (_vote) {
             currentPoll.yesVotes++;
         } else {
             currentPoll.noVotes++;
