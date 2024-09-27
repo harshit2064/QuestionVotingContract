@@ -11,12 +11,6 @@ contract QuestionVoting {
 
     Poll public currentPoll;
 
-    // to check if a poll is active
-    modifier ActivePoll() {
-        require(currentPoll.isActive, "Poll is not active.");
-        _;
-    }
-
     // to create a new poll
     function createPoll(string memory _question) public {
         require(!currentPoll.isActive, "A poll is already active");
@@ -30,7 +24,7 @@ contract QuestionVoting {
     }
 
     // to vote
-    function vote(bool _voteYes) public onlyActivePoll {
+    function vote(bool _voteYes) public {
         assert(currentPoll.isActive);
 
         if (_voteYes) {
@@ -41,7 +35,7 @@ contract QuestionVoting {
     }
 
     // to close the poll and get results
-    function closePoll() public onlyActivePoll {
+    function closePoll() public {
         if (!currentPoll.isActive) {
             revert("Poll is already closed");
         }
